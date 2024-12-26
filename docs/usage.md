@@ -4,12 +4,7 @@
 ### Table of Contents
 
 - [Getting Started](usage.md#getting-started)
-- [Components of the CadQuery Workbench](usage.md#components-of-the-cadquery-workbench)
-- [Examples](usage.md#examples)
-- [Settings](usage.md#settings)
-- [Environment Variables](usage.md#environment-variables)
 - [Using an External Code Editor](usage.md#using-an-external-code-editor)
-- [cqparts](usage.md#cqparts)
 - [Getting Help](usage.md#getting-help)
 
 ### Getting Started
