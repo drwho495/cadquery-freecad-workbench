@@ -4,6 +4,7 @@
 ### Table of Contents
 
 - [Getting Started](usage.md#getting-started)
+- [First Coding Session](usage.md#first-coding-session)
 - [Using an External Code Editor](usage.md#using-an-external-code-editor)
 - [Getting Help](usage.md#getting-help)
 
