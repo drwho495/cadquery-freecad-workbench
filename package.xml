@@ -14,7 +14,7 @@
             <classname>CadQueryWorkbench</classname>
             <subdirectory>./</subdirectory>
             <icon>CQGui/icons/CQ_Logo.svg</icon>
-            <depend type="python" git="https://github.com/CadQuery/cadquery.git" branch="main">cadquery</depend>
+            <depend type="python" git="https://github.com/CadQuery/cadquery.git" branch="master">cadquery</depend>
             <depend type="python" version_eq="7.7.2">cadquery_ocp</depend>
         </workbench>
     </content>
