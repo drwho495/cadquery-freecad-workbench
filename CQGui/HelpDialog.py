@@ -26,7 +26,7 @@ class HelpDialog(QtGui.QDialog):
         cq_docs_link.setOpenExternalLinks(True)
 
         # FreeCAD workbench documentation link
-        wb_docs_link = QtGui.QLabel('- <a href="https://github.com/CadQuery/freecad-cadquery-module/docs">Workbench Documentation</a>')
+        wb_docs_link = QtGui.QLabel('- <a href="https://github.com/CadQuery/cadquery-freecad-workbench/tree/master/docs">Workbench Documentation</a>')
         wb_docs_link.setOpenExternalLinks(True)
 
         self.buttons = QtGui.QDialogButtonBox()
