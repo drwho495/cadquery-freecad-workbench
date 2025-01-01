@@ -1,4 +1,4 @@
-# (c) 2014-2024 CadQuery Developers Apache 2.0 License
+# (c) 2014-2025 CadQuery Developers
 import FreeCAD
 import FreeCADGui
 from PySide import QtGui

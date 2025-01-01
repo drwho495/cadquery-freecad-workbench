@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# (c) 2014-2024 CadQuery Developers Apache 2.0 License
+# (c) 2014-2025 CadQuery Developers
 
 """Adds all of the commands that are used for the menus of the CadQuery module"""
 
