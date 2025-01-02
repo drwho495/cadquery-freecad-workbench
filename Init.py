@@ -7,7 +7,10 @@ globals()['show_object'] = show_object
 try:
     import cadquery
 except ImportError:
+    import os
     import sys
     import subprocess
-    subprocess.run(["python", "-m", "pip", "install", "--upgrade", "cadquery==2.5.1"], capture_output=False)
+    os.environ.pop('CONDA_PREFIX', None)
+    os.environ.pop('CONDA_PREFIX_1', None)
+    subprocess.run(["python", "-m", "pip", "install", "--upgrade", "--force-reinstall", "cadquery==2.5.1"], capture_output=False)
     subprocess.run(["python", "-m", "pip", "install", "--upgrade", "cadquery_ocp==7.7.2"], capture_output=False)
