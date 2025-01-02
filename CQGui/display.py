@@ -1,7 +1,6 @@
-import Part, FreeCAD, FreeCADGui
-
 # Define the show_object function which CadQuery execution environments need to provide
 def show_object(cq_object, options=None):
+    import Part, FreeCAD, FreeCADGui
     from PySide import QtGui
 
     # Create the object that the BRep data will be read into
