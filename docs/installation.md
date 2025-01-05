@@ -2,15 +2,20 @@
 ## Installation
 
 ### Table of Contents
-- [Via Addon manager](installation.md#automated)
+- [Automated (via the Addon manager)](installation.md#automated)
 - [Manual](installation.md#manual)
 
-### Automated
+### Automated (via the Addon manager)
+
 This workbench can be install via FreeCAD's `Addon manager`.
 1. Run the FreeCAD Addon Manager by clicking `Tools->Addon manager`
+
 ![Addon manager menu item](images/addon_manager_menu_item.png)
+
 2. Scroll down and click on `CadQuery`
-![cadquery_module addon item](images/cadquery_module_addon_manager_item.png)
+
+![cadquery_module addon item](images/cadquery_workbench_addon_manager_item.png)
+
 3. Click the `Install / update` button
 3. Restart FreeCAD
 4. Confirm that CadQuery is in the drop down menu of available workbenches
