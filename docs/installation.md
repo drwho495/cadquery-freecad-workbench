@@ -46,7 +46,7 @@ Sometimes a different version or branch of the workbench may be needed, other th
 
 Sometimes the dependencies of the workbench will not install automatically. You may be an error similar to the following.
 
-![CadQuery Dependencies not Installed Error Dialog]()
+![CadQuery Dependencies not Installed Error Dialog](images/cadquery_dependencies_error_dialog.png)
 
 If this happens, go ahead and click the `OK` button. Please check the list below to make sure that your system is supported by CadQuery's dependency chain by checking the following list.
 
@@ -63,8 +63,10 @@ Activate the `CadQuery` workbench from the dropdown. This should add a `CadQuery
 
 ![Install CadQuery Stable Menu](images/install_cadquery_stable_submenu_item.png)
 
-Click that and check the Report View to see when it is finished installing. Once the installation is complete, restart FreeCAD.
+Click that and check the Report View to see when it is finished installing. It will take a few minutes. Once the installation is complete, restart FreeCAD.
 
-There are other installation options in this submenu, but they should not be used unless you understand why you should use them.
+You can also re-run this menu item again to update the CadQuery dependencies after a workbench update.
+
+There are other installation options in this submenu, but they are made available for testing purposes.
 
 [<Back to Main](index.md) | [Usage>](usage.md)
