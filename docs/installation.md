@@ -42,4 +42,29 @@ Sometimes a different version or branch of the workbench may be needed, other th
 - /Users/[your_user_name]/Library/Preferences/FreeCAD/Mod
 - ~/Library/Preferences/FreeCAD/Mod
 
+## Troubleshooting Dependencies
+
+Sometimes the dependencies of the workbench will not install automatically. You may be an error similar to the following.
+
+![CadQuery Dependencies not Installed Error Dialog]()
+
+If this happens, go ahead and click the `OK` button. Please check the list below to make sure that your system is supported by CadQuery's dependency chain by checking the following list.
+
+* Linux Intel/AMD
+* Windows Intel/AMD
+* MacOS Intel
+* MacOS ARM64
+
+Once you have checked that list, restart FreeCAD, and try the backup installation method shown below.
+
+### Install CadQuery Stable
+
+Activate the `CadQuery` workbench from the dropdown. This should add a `CadQuery` item to FreeCAD's menu. Click on the menu item, and expand the `Install` submenu. There you will find a `Install CadQuery Stable` item.
+
+![Install CadQuery Stable Menu](images/install_cadquery_stable_submenu_item.png)
+
+Click that and check the Report View to see when it is finished installing. Once the installation is complete, restart FreeCAD.
+
+There are other installation options in this submenu, but they should not be used unless you understand why you should use them.
+
 [<Back to Main](index.md) | [Usage>](usage.md)

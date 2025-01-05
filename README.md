@@ -1,4 +1,4 @@
-The CadQuery Module for FreeCAD
+The CadQuery Workbench for FreeCAD
 =======================
 [![GitHub version](https://d25lcipzij17d.cloudfront.net/badge.svg?id=gh&type=6&v=2.0.0&x2=0)](https://github.com/CadQuery/cadquery-freecad-workbench/releases/tag/v2.0.0)
 
