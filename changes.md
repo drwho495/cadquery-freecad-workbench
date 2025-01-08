@@ -1,7 +1,14 @@
 Changes
 =======
 
-v2.0.0 (upcoming)
+v2.1.0
+-----
+
+    * Fixed bug where 3D model document tab could be duplicated in some cases (tahnks @benjinne)
+    * Added a submenu to allow manual install of CadQuery and Build123d until #165 is fixed
+    * Changed `show_object` to handle build123d objects natively (thanks @jdegenstein)
+
+v2.0.0
 -----
 
     * Completely reworked the Workbench to that it would work with CadQuery 2.x
