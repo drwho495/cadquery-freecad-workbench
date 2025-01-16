@@ -44,11 +44,14 @@ class CadQueryUnstableInstall:
         return True
 
     def Activated(self):
-        import subprocess
         print("Starting to install CadQuery unstable...")
-        subprocess.run(["python", "-m", "pip", "install", "--upgrade", "https://github.com/CadQuery/cadquery.git"], capture_output=False)
-        subprocess.run(["python", "-m", "pip", "install", "--upgrade", "cadquery-ocp==7.8.1.0"], capture_output=False)
+        import subprocess
+        subprocess.run(["python", "-m", "pip", "uninstall", "-y", "vtk"], capture_output=False)
+        subprocess.run(["python", "-m", "pip", "uninstall", "-y", "cadquery-vtk"], capture_output=False)
         subprocess.run(["python", "-m", "pip", "install", "--upgrade", "vtk==9.3.1"], capture_output=False)
+        subprocess.run(["python", "-m", "pip", "uninstall", "-y", "cadquery-ocp"], capture_output=False)
+        subprocess.run(["python", "-m", "pip", "install", "--upgrade", "cadquery-ocp==7.8.1.0"], capture_output=False)
+        subprocess.run(["python", "-m", "pip", "install", "--upgrade", "https://github.com/CadQuery/cadquery.git"], capture_output=False)
         print("CadQuery unstable has been installed! Please restart FreeCAD.")
 
 
