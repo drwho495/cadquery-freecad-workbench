@@ -14,7 +14,6 @@ from CQGui.Command import (CadQueryHelp,
                           Build123DInstall)
 from CQGui.CodeFeatureCommands import registerCodeFeatureCommand
 
-
 class CadQueryWorkbench (Workbench):
     """CadQuery workbench for FreeCAD"""
       
