@@ -1,0 +1,26 @@
+# -*- coding: utf-8 -*-
+# Build123D Box Macro for CodeFeature
+# This macro is intended to be executed by a CodeFeature object.
+# It must assign the final shape to a variable named 'result'.
+
+import FreeCAD # Available in FreeCAD's macro environment
+from build123d import *
+
+FreeCAD.Console.PrintMessage("Executing B3D_Box_For_CodeFeature.FCMacro...\n")
+
+# --- Parameters ---
+length = 15.0
+width = 10.0
+height = 5.0
+
+# --- Shape Creation ---
+try:
+    # In build123d, direct instantiation often creates the shape.
+    # The result of operations is typically the object itself.
+    geom = Box(length, width, height)
+    result = geom # Assign the build123d object to 'result'
+    FreeCAD.Console.PrintMessage("Build123D box created successfully with L={}, W={}, H={}\n".format(length, width, height))
+except Exception as e:
+    import traceback
+    FreeCAD.Console.PrintError("Error in B3D_Box_For_CodeFeature.FCMacro: \n{}".format(traceback.format_exc()))
+    result = None # Ensure result is defined even on error

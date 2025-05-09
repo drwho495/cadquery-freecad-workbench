@@ -1,0 +1,26 @@
+# -*- coding: utf-8 -*-
+# CadQuery Sphere Macro for CodeFeature
+# This macro is intended to be executed by a CodeFeature object.
+# It must assign the final shape to a variable named 'result'.
+
+import FreeCAD # Available in FreeCAD's macro environment
+import cadquery as cq
+
+FreeCAD.Console.PrintMessage("Executing CQ_Sphere_For_CodeFeature.FCMacro...\n")
+
+# --- Parameters (could be read from CodeFeature properties in a more advanced setup) ---
+radius = 12.5
+# Example: if the CodeFeature had a App::PropertyFloat named 'SphereRadius',
+# you could try to access it via the feature object if it were passed in, e.g.:
+# if 'feature_object' in locals() and hasattr(feature_object, 'SphereRadius'):
+#    radius = feature_object.SphereRadius 
+
+# --- Shape Creation ---
+try:
+    shape = cq.Workplane("XY").sphere(radius)
+    result = shape.val() # Ensure it's a CadQuery Solid/Shape, not Workplane
+    FreeCAD.Console.PrintMessage("CadQuery sphere created successfully with radius: {}\n".format(radius))
+except Exception as e:
+    import traceback
+    FreeCAD.Console.PrintError("Error in CQ_Sphere_For_CodeFeature.FCMacro: \n{}".format(traceback.format_exc()))
+    result = None # Ensure result is defined even on error, to prevent NameError in CodeFeature
