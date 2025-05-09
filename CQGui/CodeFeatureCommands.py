@@ -1,6 +1,5 @@
 # CQGui/CodeFeatureCommands.py
 # -*- coding: utf-8 -*-
-# (c) 2025 OpenHands - Commands for CodeFeature
 
 import FreeCAD # Required for FreeCAD.activeDocument(), FreeCAD.newDocument(), FreeCAD.GuiUp, FreeCAD.Console
 # FreeCADGui is imported within functions after GuiUp check or if PySide is used.
