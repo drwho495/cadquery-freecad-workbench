@@ -39,16 +39,16 @@ def registerCodeFeatureCommand():
                 FreeCAD.Console.PrintMessage("Code Feature creation cancelled by user (no name provided).\n")
                 return
 
-            newFeature = createCodeFeature(doc, name=featureName)
-            if not newFeature:
-                FreeCAD.Console.PrintError(f"Failed to create Code Feature object named {featureName}.\n")
-                return
-
             macroFilename, macroOk = QtGui.QInputDialog.getText(FreeCADGui.getMainWindow(),
                                                                 "Set Macro File (Optional)",
                                                                 "Enter a macro name (e.g., MyShape)\nLocated in your default macro directory:",
                                                                 QtGui.QLineEdit.Normal,
                                                                 "") # Default empty
+            
+            newFeature = createCodeFeature(doc, name=featureName)
+            if not newFeature:
+                FreeCAD.Console.PrintError(f"Failed to create Code Feature object named {featureName}.\n")
+                return
 
             if macroOk and macroFilename:
                 try:
@@ -67,7 +67,6 @@ def registerCodeFeatureCommand():
                     FreeCAD.Console.PrintError(f"Error getting default macro path or setting MacroPath property: {e}\n")
             
             executeCodeFeature(newFeature)
-            if FreeCAD.ActiveDocument: FreeCAD.ActiveDocument.recompute()
 
         def IsActive(self):
             return True

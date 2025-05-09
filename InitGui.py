@@ -24,7 +24,6 @@ class CadQueryWorkbench (Workbench):
 
     def Initialize(self):
         self.appendMenu('CadQuery', ['CQ_CreateCodeFeature']) 
-        self.appendMenu('CadQuery', ['CQ_RecomputeCodeFeature']) 
         self.appendMenu('CadQuery', ['CadQueryClearOutput'])
         self.appendMenu(['CadQuery', 'Install'], ["CadQueryStableInstall",
                                                   "CadQueryUnstableInstall",
@@ -47,9 +46,7 @@ FreeCADGui.addCommand('Build123DInstall', Build123DInstall())
 FreeCADGui.addCommand('CadQueryClearOutput', CadQueryClearOutput())
 FreeCADGui.addCommand('CadQueryHelp', CadQueryHelp())
 
-# Register new commands from CodeFeature.py
-# These functions internally call FreeCADGui.addCommand
-if FreeCAD.GuiUp: # Ensure GUI is up before trying to register GUI commands
+if FreeCAD.GuiUp:
     registerCodeFeatureCommand()
 
 FreeCADGui.addWorkbench(CadQueryWorkbench())
