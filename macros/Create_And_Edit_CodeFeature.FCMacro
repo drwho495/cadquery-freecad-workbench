@@ -12,7 +12,7 @@ import FreeCADGui
 # hasn't set up sys.path, you might need to adjust sys.path.
 # However, when run as a FreeCAD macro, this should generally work if the workbench is loaded.
 try:
-    from CQGui import CodeFeature # Assuming CodeFeature.py is in CQGui
+    from CQGui.CodeFeature import createCodeFeature, executeCodeFeature
 except ImportError as e:
     FreeCAD.Console.PrintError("Error importing CodeFeature: {}\n".format(e))
     FreeCAD.Console.PrintError("Please ensure the CadQuery workbench is correctly installed and its modules are in sys.path.\n")
@@ -22,7 +22,7 @@ except ImportError as e:
     # from CQGui import CodeFeature
     raise # Re-raise the exception if the import fails, to stop the macro.
 
-def run_macro():
+def runMacro():
     """Main function to run the macro's operations."""
     
     doc = FreeCAD.activeDocument()
@@ -34,7 +34,7 @@ def run_macro():
 
     # 1. Create a new Code Feature
     FreeCAD.Console.PrintMessage("Creating a new Code Feature...\n")
-    cf_sphere = CodeFeature.create_code_feature(doc, name="MyCQSphere")
+    cfObject = createCodeFeature(doc, name="MyCQSphere")
 
     if not cf_sphere:
         FreeCAD.Console.PrintError("Failed to create Code Feature.\n")

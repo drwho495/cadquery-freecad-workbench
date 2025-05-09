@@ -1,15 +1,11 @@
-# CQGui/CodeFeatureCommands.py
-# -*- coding: utf-8 -*-
-# (c) 2025 OpenHands - Commands for CodeFeature
-
 import FreeCAD # Required for FreeCAD.activeDocument(), FreeCAD.newDocument(), FreeCAD.GuiUp, FreeCAD.Console
 # FreeCADGui is imported within functions after GuiUp check or if PySide is used.
 # PySide.QtGui is imported within register_code_feature_command after GuiUp check.
 
 # Import the core logic functions from CodeFeature.py
-from .CodeFeature import create_code_feature, execute_code_feature
+from CodeFeature import createCodeFeature, executeCodeFeature
 
-def register_code_feature_command():
+def registerCodeFeatureCommand():
     """
     Registers a command in FreeCAD to create a CodeFeature.
     This is a basic example; a real implementation would integrate into the CadQuery workbench menu.
@@ -49,7 +45,7 @@ def register_code_feature_command():
     FreeCADGui.addCommand('CQ_CreateCodeFeature', CreateCodeFeatureCommand())
 
 
-def recompute_selected_code_feature_command():
+def recomputeSelectedCodeFeatureCommand():
     """
     Registers a command to recompute the selected CodeFeature.
     """

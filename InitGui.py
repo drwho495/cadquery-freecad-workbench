@@ -12,7 +12,7 @@ from CQGui.Command import (CadQueryHelp,
                           CadQueryStableInstall,
                           CadQueryUnstableInstall,
                           Build123DInstall)
-from CQGui.CodeFeatureCommands import register_code_feature_command, recompute_selected_code_feature_command
+from CQGui.CodeFeatureCommands import registerCodeFeatureCommand, recomputeSelectedCodeFeatureCommand
 
 
 class CadQueryWorkbench (Workbench):
@@ -50,7 +50,7 @@ FreeCADGui.addCommand('CadQueryHelp', CadQueryHelp())
 # Register new commands from CodeFeature.py
 # These functions internally call FreeCADGui.addCommand
 if FreeCAD.GuiUp: # Ensure GUI is up before trying to register GUI commands
-    register_code_feature_command()
-    recompute_selected_code_feature_command()
+    registerCodeFeatureCommand()
+    recomputeSelectedCodeFeatureCommand()
 
 FreeCADGui.addWorkbench(CadQueryWorkbench())

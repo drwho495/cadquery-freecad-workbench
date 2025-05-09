@@ -1,13 +1,10 @@
-# -*- coding: utf-8 -*-
-# (c) 2025 OpenHands
-#
 # Module for creating and managing 'Code Features' in FreeCAD,
 # which are Part::Features driven by Python code (CadQuery or Build123D).
 
 import FreeCAD
 import Part
 
-def create_code_feature(doc, name="CodeFeature"):
+def createCodeFeature(doc, name="CodeFeature"):
     """
     Creates a new 'Code Feature' (a Part::Feature with custom properties for storing code).
 
@@ -44,7 +41,7 @@ def create_code_feature(doc, name="CodeFeature"):
     return obj
 
 # --- Placeholder for execution logic ---
-def execute_code_feature(feature_object):
+def executeCodeFeature(featureObject):
     """
     Executes the code stored in the CodeFeature and updates its Shape.
     (This is a simplified placeholder - full implementation needs care with execution context and error handling)
