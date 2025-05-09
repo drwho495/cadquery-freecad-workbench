@@ -218,6 +218,12 @@ def register_code_feature_command():
     Registers a command in FreeCAD to create a CodeFeature.
     This is a basic example; a real implementation would integrate into the CadQuery workbench menu.
     """
+    if not FreeCAD.GuiUp: # Guard at the top
+        return
+
+    from PySide import QtGui # Imports moved up
+    import FreeCADGui
+
     class CreateCodeFeatureCommand:
         def GetResources(self):
             return {"MenuText": "Create Code Feature",
@@ -228,7 +234,6 @@ def register_code_feature_command():
             if not doc:
                 doc = FreeCAD.newDocument("CodeFeatureDoc")
             
-            # Ask user for a name (optional, can be improved with a dialog)
             feature_name, ok = QtGui.QInputDialog.getText(FreeCADGui.getMainWindow(), 
                                                           "Create Code Feature", 
                                                           "Enter feature name:", 
@@ -237,20 +242,15 @@ def register_code_feature_command():
             if ok and feature_name:
                 new_feature = create_code_feature(doc, name=feature_name)
                 if new_feature:
-                    # Automatically execute once after creation to generate initial shape
                     execute_code_feature(new_feature) 
-                    FreeCAD.ActiveDocument.recompute() # Ensure UI update
+                    if FreeCAD.ActiveDocument: FreeCAD.ActiveDocument.recompute()
             else:
                 FreeCAD.Console.PrintMessage("Code Feature creation cancelled by user.\\n")
 
-
         def IsActive(self):
             return True
-
-    if FreeCAD.GuiUp: # Only register if GUI is running
-        from PySide import QtGui # Import here as FreeCADGui might not be fully available at module load
-        import FreeCADGui
-        FreeCADGui.addCommand('CQ_CreateCodeFeature', CreateCodeFeatureCommand())
+    
+    FreeCADGui.addCommand('CQ_CreateCodeFeature', CreateCodeFeatureCommand())
 
 # Call registration when module is loaded in GUI environment
 # if FreeCAD.GuiUp:
@@ -260,6 +260,11 @@ def recompute_selected_code_feature_command():
     """
     Registers a command to recompute the selected CodeFeature.
     """
+    if not FreeCAD.GuiUp: # Guard at the top
+        return
+
+    import FreeCADGui # Import moved up
+
     class RecomputeCodeFeatureCommand:
         def GetResources(self):
             return {"MenuText": "Recompute Code Feature",
@@ -273,31 +278,23 @@ def recompute_selected_code_feature_command():
             
             recomputed_any = False
             for obj in selection:
-                if hasattr(obj, "Proxy") and isinstance(obj.Proxy, CodeFeatureProxy): # Check if it's our specific kind of feature
-                     execute_code_feature(obj)
-                     recomputed_any = True
-                elif hasattr(obj, "CodeString") and hasattr(obj, "CodeType"): # Fallback check for properties
-                    FreeCAD.Console.PrintMessage(f"Attempting to recompute generic object {obj.Label} as Code Feature.\\n")
+                if hasattr(obj, "MacroPath"): 
+                    FreeCAD.Console.PrintMessage(f"Attempting to recompute Code Feature {obj.Label}.\\n")
                     execute_code_feature(obj)
                     recomputed_any = True
 
             if not recomputed_any:
-                 FreeCAD.Console.PrintWarning("No selected object appears to be a Code Feature that can be recomputed this way.\\n")
-
+                 FreeCAD.Console.PrintWarning("No selected object appears to be a Code Feature (has MacroPath property).\\n")
 
         def IsActive(self):
             selection = FreeCADGui.Selection.getSelection()
             if not selection: return False
-            # Only active if at least one selected object looks like a CodeFeature
             for obj in selection:
-                if (hasattr(obj, "Proxy") and isinstance(obj.Proxy, CodeFeatureProxy)) or \
-                   (hasattr(obj, "CodeString") and hasattr(obj, "CodeType")):
+                if hasattr(obj, "MacroPath"):
                     return True
             return False
-
-    if FreeCAD.GuiUp:
-        import FreeCADGui
-        FreeCADGui.addCommand('CQ_RecomputeCodeFeature', RecomputeCodeFeatureCommand())
+            
+    FreeCADGui.addCommand('CQ_RecomputeCodeFeature', RecomputeCodeFeatureCommand())
 
 # if FreeCAD.GuiUp:
 #    recompute_selected_code_feature_command() # This should be called from InitGui.py
