@@ -12,7 +12,7 @@ from CQGui.Command import (CadQueryHelp,
                           CadQueryStableInstall,
                           CadQueryUnstableInstall,
                           Build123DInstall)
-from CQGui.CodeFeature import register_code_feature_command, recompute_selected_code_feature_command
+from CQGui.CodeFeatureCommands import register_code_feature_command, recompute_selected_code_feature_command
 
 
 class CadQueryWorkbench (Workbench):
