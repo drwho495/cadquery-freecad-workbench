@@ -42,40 +42,39 @@ def createCodeFeature(doc, name="CodeFeature"):
     doc.recompute() # Recompute to make the new object visible and properties available
     return obj
 
-# --- Placeholder for execution logic ---
 def executeCodeFeature(featureObject):
     """
     Executes the code stored in the CodeFeature and updates its Shape.
-    (This is a simplified placeholder - full implementation needs care with execution context and error handling)
     """
     # Ensure MacroPath property exists. If not, try to add it.
-    if not hasattr(feature_object, "MacroPath"):
-        FreeCAD.Console.PrintWarning(f"Object {feature_object.Name} is missing MacroPath property. Attempting to add it.\n")
+    if not hasattr(featureObject, "MacroPath"):
+        FreeCAD.Console.PrintWarning(f"Object {featureObject.Name} is missing MacroPath property. Attempting to add it.\n")
         try:
-            feature_object.addProperty("App::PropertyFile", "MacroPath", "CodeObject", "Path to the .FCMacro file that generates the shape.")
-            FreeCAD.Console.PrintMessage(f"Added MacroPath property to {feature_object.Name}. Please set its value and recompute.\n")
+            featureObject.addProperty("App::PropertyFile", "MacroPath", "CodeObject", "Path to the .FCMacro file that generates the shape.")
+            FreeCAD.Console.PrintMessage(f"Added MacroPath property to {featureObject.Name}. Please set its value and recompute.\n")
             return 
         except Exception as e:
-            FreeCAD.Console.PrintError(f"Could not add MacroPath property to {feature_object.Name}: {e}. Cannot proceed.\n")
+            FreeCAD.Console.PrintError(f"Could not add MacroPath property to {featureObject.Name}: {e}. Cannot proceed.\n")
             return
 
-    macro_file_path = feature_object.MacroPath
-    generated_object_label = feature_object.GeneratedObjectLabel if hasattr(feature_object, "GeneratedObjectLabel") else feature_object.Name
+    macro_file_path = featureObject.MacroPath
+    generated_object_label = featureObject.GeneratedObjectLabel if hasattr(featureObject, "GeneratedObjectLabel") else featureObject.Name
 
     if not macro_file_path:
-        FreeCAD.Console.PrintError(f"MacroPath property is empty for {feature_object.Name}. Please specify a .FCMacro file.\n")
+        FreeCAD.Console.PrintError(f"MacroPath property is empty for {featureObject.Name}. Please specify a .FCMacro file.\n")
         return
     
-    FreeCAD.Console.PrintMessage(f"Executing CodeFeature: {feature_object.Name} from macro: {macro_file_path}\n")
+    FreeCAD.Console.PrintMessage(f"Executing CodeFeature: {featureObject.Name} from macro: {macro_file_path}\n")
 
     try:
         import os
         # Attempt to resolve relative paths against the document's directory if the document is saved
         if not os.path.isabs(macro_file_path):
-            doc = feature_object.Document
+            doc = featureObject.Document
             if doc and doc.FileName:
                 doc_dir = os.path.dirname(doc.FileName)
                 resolved_path = os.path.join(doc_dir, macro_file_path)
+                
                 if os.path.exists(resolved_path):
                     FreeCAD.Console.PrintMessage(f"  Resolved relative macro path to: {resolved_path}\n")
                     macro_file_path = resolved_path
@@ -87,10 +86,10 @@ def executeCodeFeature(featureObject):
         with open(macro_file_path, 'r', encoding='utf-8') as f:
             code_from_macro = f.read()
     except FileNotFoundError:
-        FreeCAD.Console.PrintError(f"Macro file not found: {macro_file_path} for {feature_object.Name}.\n")
+        FreeCAD.Console.PrintError(f"Macro file not found: {macro_file_path} for {featureObject.Name}.\n")
         return
     except Exception as e:
-        FreeCAD.Console.PrintError(f"Error reading macro file {macro_file_path} for {feature_object.Name}: {e}\n")
+        FreeCAD.Console.PrintError(f"Error reading macro file {macro_file_path} for {featureObject.Name}: {e}\n")
         return
 
 
@@ -166,55 +165,28 @@ def executeCodeFeature(featureObject):
             FreeCAD.Console.PrintError("Resulting Part.Shape is null. Check the code and BRep export.\n")
             return
 
-        feature_object.Shape = part_shape
-        if hasattr(feature_object.ViewObject, "ShapeColor"): # Check if ViewObject exists and has ShapeColor
+        featureObject.Shape = part_shape
+        if hasattr(featureObject.ViewObject, "ShapeColor"): # Check if ViewObject exists and has ShapeColor
              # You can set default color or expose as property later
-            pass # feature_object.ViewObject.ShapeColor = (0.8, 0.8, 0.3) 
-        if hasattr(feature_object.ViewObject, "Transparency"):
-            pass # feature_object.ViewObject.Transparency = 0
+            pass # featureObject.ViewObject.ShapeColor = (0.8, 0.8, 0.3) 
+        if hasattr(featureObject.ViewObject, "Transparency"):
+            pass # featureObject.ViewObject.Transparency = 0
 
         # Update the label of the feature if a GeneratedObjectLabel was provided
         # The main feature name (obj.Name) is system-managed and should not be changed lightly.
         # The feature label (obj.Label) is user-friendly.
         if generated_object_label:
-            feature_object.Label = generated_object_label
+            featureObject.Label = generated_object_label
 
-        FreeCAD.Console.PrintMessage(f"Successfully updated shape for {feature_object.Name} from code.\n")
+        FreeCAD.Console.PrintMessage(f"Successfully updated shape for {featureObject.Name} from code.\n")
 
     except Exception as e:
         import traceback
-        FreeCAD.Console.PrintError(f"Error executing macro '{macro_file_path}' for CodeFeature '{feature_object.Name}':\n------\n{traceback.format_exc()}\n")
+        FreeCAD.Console.PrintError(f"Error executing macro '{macro_file_path}' for CodeFeature '{featureObject.Name}':\n------\n{traceback.format_exc()}\n")
 
     finally:
         if FreeCAD.ActiveDocument: # Ensure doc is still valid
             FreeCAD.ActiveDocument.recompute()
-
-# Example of how to use it from the FreeCAD Python console:
-# import CodeFeature
-# doc = FreeCAD.activeDocument()
-# if not doc:
-#     doc = FreeCAD.newDocument("MyCodeFeatures")
-# cf = CodeFeature.create_code_feature(doc, name="MyParametricCube")
-# if cf:
-#     # To change the code:
-#     # cf.CodeString = "import cadquery as cq\\nresult = cq.Workplane('XY').sphere(5).val()"
-#     # cf.CodeType = "CadQuery"
-#     # cf.GeneratedObjectLabel = "MySphere"
-#     # CodeFeature.execute_code_feature(cf)
-#     #
-#     # For Build123D:
-#     # cf.CodeString = "from build123d import *\nresult = Sphere(10)" # Build123D often uses direct class instantiation
-#     # cf.CodeType = "Build123D"
-#     # cf.GeneratedObjectLabel = "MyB3DSphere"
-#     # CodeFeature.execute_code_feature(cf)
-#     pass
-
-# To make this runnable from FreeCAD's macro system or workbench,
-# you'd typically wrap these calls in Command classes.
-
-
-
-
 
 # --- FreeCAD FeaturePython structure (if we were to make it a full FeaturePython object) ---
 # This part is more advanced and makes the feature behave more like a native FreeCAD feature,
@@ -269,7 +241,7 @@ class CodeFeatureProxy:
 #    obj.ViewObject.Proxy = 0 # Can also have a ViewProviderProxy for custom display
 #    # Add properties directly here or ensure CodeFeatureProxy adds them
 #    obj.addProperty("App::PropertyString", "CodeString", "CodeObject", "Python code...")
-#    obj.CodeString = "import cadquery as cq\\nresult = cq.Workplane('XY').box(1,2,3).val()"
+#    obj.CodeString = "import cadquery as cq\nresult = cq.Workplane('XY').box(1,2,3).val()"
 #    obj.addProperty("App::PropertyEnumeration", "CodeType", "CodeObject", "Code Type")
 #    obj.CodeType = ["CadQuery", "Build123D"]
 #    obj.CodeType = "CadQuery"

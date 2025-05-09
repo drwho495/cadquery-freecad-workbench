@@ -37,19 +37,19 @@ def registerCodeFeatureCommand():
                                                           QtGui.QLineEdit.Normal, 
                                                           "MyCodeObject")
             if not (nameOk and featureName):
-                FreeCAD.Console.PrintMessage("Code Feature creation cancelled by user (no name provided).\\n")
+                FreeCAD.Console.PrintMessage("Code Feature creation cancelled by user (no name provided).\n")
                 return
 
             # Create the feature first
             newFeature = createCodeFeature(doc, name=featureName)
             if not newFeature:
-                FreeCAD.Console.PrintError(f"Failed to create Code Feature object named {featureName}.\\n")
+                FreeCAD.Console.PrintError(f"Failed to create Code Feature object named {featureName}.\n")
                 return
 
             # Optionally, ask for macro filename
             macroFilename, macroOk = QtGui.QInputDialog.getText(FreeCADGui.getMainWindow(),
                                                                 "Set Macro File (Optional)",
-                                                                "Enter macro filename (e.g., MyShape.FCMacro)\\nLocated in your default macro directory:",
+                                                                "Enter a macro name (e.g., MyShape)\nLocated in your default macro directory:",
                                                                 QtGui.QLineEdit.Normal,
                                                                 "") # Default empty
 
@@ -57,15 +57,18 @@ def registerCodeFeatureCommand():
                 try:
                     defaultMacroDir = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Macro").GetString("MacroPath")
                     if not defaultMacroDir:
-                        FreeCAD.Console.PrintWarning("Default macro directory not found or not set in preferences.\\n")
+                        FreeCAD.Console.PrintWarning("Default macro directory not found or not set in preferences.\n")
                     else:
                         fullMacroPath = os.path.join(defaultMacroDir, macroFilename)
+                        if not fullMacroPath.endswith(".FCMacro"):
+                            fullMacroPath += ".FCMacro"
+
                         newFeature.MacroPath = fullMacroPath
-                        FreeCAD.Console.PrintMessage(f"Set MacroPath for {newFeature.Label} to: {fullMacroPath}\\n")
+                        
                         if not os.path.exists(fullMacroPath):
-                             FreeCAD.Console.PrintWarning(f"Warning: Macro file {fullMacroPath} does not currently exist.\\n")
+                             FreeCAD.Console.PrintWarning(f"Warning: Macro file {fullMacroPath} does not currently exist.\n")
                 except Exception as e:
-                    FreeCAD.Console.PrintError(f"Error getting default macro path or setting MacroPath property: {e}\\n")
+                    FreeCAD.Console.PrintError(f"Error getting default macro path or setting MacroPath property: {e}\n")
             
             executeCodeFeature(newFeature)
             if FreeCAD.ActiveDocument: FreeCAD.ActiveDocument.recompute()
@@ -93,18 +96,18 @@ def recomputeSelectedCodeFeatureCommand():
         def Activated(self):
             selection = FreeCADGui.Selection.getSelection()
             if not selection:
-                FreeCAD.Console.PrintWarning("No object selected to recompute.\\n")
+                FreeCAD.Console.PrintWarning("No object selected to recompute.\n")
                 return
             
             recomputed_any = False
             for obj in selection:
                 if hasattr(obj, "MacroPath"): 
-                    FreeCAD.Console.PrintMessage(f"Attempting to recompute Code Feature {obj.Label}.\\n")
+                    FreeCAD.Console.PrintMessage(f"Attempting to recompute Code Feature {obj.Label}.\n")
                     execute_code_feature(obj)
                     recomputed_any = True
 
             if not recomputed_any:
-                 FreeCAD.Console.PrintWarning("No selected object appears to be a Code Feature (has MacroPath property).\\n")
+                 FreeCAD.Console.PrintWarning("No selected object appears to be a Code Feature (has MacroPath property).\n")
 
         def IsActive(self):
             selection = FreeCADGui.Selection.getSelection()
