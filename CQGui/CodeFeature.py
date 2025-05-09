@@ -7,7 +7,6 @@ def createCodeFeature(doc, name="CodeFeature"):
         return None
 
     obj = doc.addObject("Part::FeaturePython", name)
-    obj.Proxy = CodeFeatureProxy(obj)
     if not obj:
         FreeCAD.Console.PrintError(f"Failed to create Part::Feature with name {name}.\n")
         return None
@@ -24,7 +23,10 @@ def createCodeFeature(doc, name="CodeFeature"):
     obj.GeneratedObjectLabel = name
 
     FreeCAD.Console.PrintMessage(f"Created CodeFeature: {obj.Name} with Label {obj.Label}\n")
-    doc.recompute()
+    CodeFeatureProxy(obj)
+    if FreeCAD.GuiUp:
+        ViewProviderCodeFeature(obj.ViewObject)
+    doc.recompute() # Recompute to make the new object visible and properties available
     return obj
 
 def executeCodeFeature(featureObject):
@@ -75,6 +77,41 @@ def executeCodeFeature(featureObject):
     
     if fullMacroPath and os.path.exists(fullMacroPath):
         exec(open(fullMacroPath).read())
+# --- FreeCAD FeaturePython structure (if we were to make it a full FeaturePython object) ---
+# This part is more advanced and makes the feature behave more like a native FreeCAD feature,
+# with its own icon, properties in the tree, and recomputation logic.
+
+class ViewProviderCodeFeature:
+    def __init__(self, vobj):
+        vobj.Proxy = self
+        self.Object = vobj.Object
+
+    def attach(self, vobj):
+        self.Object = vobj.Object
+        self.ViewObject = vobj
+        return
+
+    def updateData(self, fp, prop):
+        pass
+
+    def getDisplayModes(self, obj):
+        modes = ["Shaded", "Wireframe", "Flat Lines", "Points"]
+        return modes
+
+    def setDisplayMode(self, mode):
+        return mode
+
+    def claimChildren(self):
+        if hasattr(self.Object, "Shape") and self.Object.Shape and not self.Object.Shape.isNull():
+            return [self.Object.Shape]
+        return []
+
+    def getIcon(self):
+        return ""
+
+# For now, we are using a simpler approach of adding properties to a Part::Feature.
+# If a more integrated solution is needed, this is the direction to go.
+
 class CodeFeatureProxy:
     def __init__(self, obj):
         self.Object = obj
