@@ -7,7 +7,7 @@ import os # For path joining
 # PySide.QtGui is imported within register_code_feature_command after GuiUp check.
 
 # Import the core logic functions from CodeFeature.py
-from .CodeFeature import createCodeFeature, executeCodeFeature
+from .CodeFeatureUtils import createCodeFeature, executeCodeFeature
 
 def registerCodeFeatureCommand():
     """
