@@ -1,95 +1,72 @@
 # -*- coding: utf-8 -*-
-
-# Macro to demonstrate creating and editing a CodeFeature object
-# from the cadquery-freecad-workbench.
+# Macro to demonstrate creating and using a CodeFeature object via MacroPath
 
 import FreeCAD
 import FreeCADGui
+import os # For path joining
 
-# It's assumed that the cadquery-freecad-workbench is installed and its
-# modules are discoverable by FreeCAD's Python environment.
-# If running this macro from outside FreeCAD in an environment where InitGui.py
-# hasn't set up sys.path, you might need to adjust sys.path.
-# However, when run as a FreeCAD macro, this should generally work if the workbench is loaded.
 try:
-    from CQGui import CodeFeature # Assuming CodeFeature.py is in CQGui
+    # Assuming CQGui is in a place FreeCAD can find (e.g., Mod/cadquery-freecad-workbench/CQGui)
+    from CQGui.CodeFeature import createCodeFeature, executeCodeFeature
 except ImportError as e:
-    FreeCAD.Console.PrintError("Error importing CodeFeature: {}\n".format(e))
+    FreeCAD.Console.PrintError("Error importing from CQGui.CodeFeature: {}\n".format(e))
     FreeCAD.Console.PrintError("Please ensure the CadQuery workbench is correctly installed and its modules are in sys.path.\n")
-    # Optionally, attempt to add the workbench path if known, e.g.
-    # import sys
-    # sys.path.append(FreeCAD.getUserAppDataDir() + "Mod/cadquery-freecad-workbench") # Example path
-    # from CQGui import CodeFeature
     raise # Re-raise the exception if the import fails, to stop the macro.
 
-def run_macro():
+def runMacro():
     """Main function to run the macro's operations."""
     
     doc = FreeCAD.activeDocument()
     if not doc:
-        doc = FreeCAD.newDocument("CodeFeatureDemo")
-        FreeCAD.Console.PrintMessage("Created new document: CodeFeatureDemo\n")
+        doc = FreeCAD.newDocument("CodeFeatureMacroDemo")
+        FreeCAD.Console.PrintMessage("Created new document: CodeFeatureMacroDemo\n")
     else:
         FreeCAD.Console.PrintMessage("Using active document: {}\n".format(doc.Name))
 
-    # 1. Create a new Code Feature
-    FreeCAD.Console.PrintMessage("Creating a new Code Feature...\n")
-    cf_sphere = CodeFeature.create_code_feature(doc, name="MyCQSphere")
+    try:
+        thisMacroPath = __file__
+        macrosDir = os.path.dirname(thisMacroPath)
+    except NameError: 
+        macrosDir = FreeCAD.getUserMacroDirMap().get("User macros", ".")
+        FreeCAD.Console.PrintWarning("__file__ not defined, assuming macrosDir: {}\n".format(macrosDir))
 
-    if not cf_sphere:
-        FreeCAD.Console.PrintError("Failed to create Code Feature.\n")
+    cqSphereMacroFile = os.path.join(macrosDir, "CQ_Sphere_For_CodeFeature.FCMacro")
+    b3dBoxMacroFile = os.path.join(macrosDir, "B3D_Box_For_CodeFeature.FCMacro")
+
+    if not os.path.exists(cqSphereMacroFile):
+        FreeCAD.Console.PrintError(f"Example macro CQ_Sphere_For_CodeFeature.FCMacro not found at {cqSphereMacroFile}\n")
+        return
+    if not os.path.exists(b3dBoxMacroFile):
+        FreeCAD.Console.PrintError(f"Example macro B3D_Box_For_CodeFeature.FCMacro not found at {b3dBoxMacroFile}\n")
         return
 
-    FreeCAD.Console.PrintMessage("Code Feature '{}' created.\n".format(cf_sphere.Label))
+    FreeCAD.Console.PrintMessage("Creating a new Code Feature...\n")
+    cfObject = createCodeFeature(doc, name="MyMacroDrivenFeature")
 
-    # 2. Set its properties for a CadQuery sphere
-    FreeCAD.Console.PrintMessage("Configuring for a CadQuery sphere...\n")
-    cf_sphere.CodeString = """
-import cadquery as cq
+    if not cfObject:
+        FreeCAD.Console.PrintError("Failed to create Code Feature.\n")
+        return
+    FreeCAD.Console.PrintMessage(f"Code Feature '{cfObject.Label}' created.\n")
 
-# Create a sphere
-radius = 5.0
-result = cq.Workplane("XY").sphere(radius).val()
-# Remember: the final shape must be assigned to the 'result' variable.
-"""
-    cf_sphere.CodeType = "CadQuery"
-    cf_sphere.GeneratedObjectLabel = "Parametric Sphere (CQ)" # This will update the object's label in the tree
+    FreeCAD.Console.PrintMessage("Configuring for a CadQuery sphere via macro...\n")
+    cfObject.MacroPath = cqSphereMacroFile
+    cfObject.GeneratedObjectLabel = "Sphere via Macro (CQ)" 
+    executeCodeFeature(cfObject)
+    if FreeCAD.ActiveDocument: FreeCAD.ActiveDocument.recompute()
+    FreeCAD.Console.PrintMessage("Sphere via macro should now be visible.\n")
 
-    # 3. Execute the Code Feature to generate the sphere
-    FreeCAD.Console.PrintMessage("Executing Code Feature to generate sphere...\n")
-    CodeFeature.execute_code_feature(cf_sphere)
-    doc.recompute() # Ensure the document and views update
-    FreeCAD.Console.PrintMessage("Sphere should now be visible.\n")
-
-    # 4. Let's reconfigure the same feature to be a Build123D box
-    FreeCAD.Console.PrintMessage("\nReconfiguring '{}' for a Build123D box...\n".format(cf_sphere.Label))
-    
-    # It's good practice to give it a new name if its fundamental geometry/purpose changes
-    # For this demo, we'll reuse the object but change its label via GeneratedObjectLabel.
-    
-    cf_sphere.CodeString = """
-from build123d import * # Common practice in build123d examples
-
-# Create a box
-length, width, height = 8, 6, 4
-result = Box(length, width, height)
-# Remember: the final shape must be assigned to the 'result' variable.
-"""
-    cf_sphere.CodeType = "Build123D"
-    cf_sphere.GeneratedObjectLabel = "Parametric Box (b3d)"
-
-    # 5. Execute again to transform it into a box
-    FreeCAD.Console.PrintMessage("Executing Code Feature to generate box...\n")
-    CodeFeature.execute_code_feature(cf_sphere)
-    doc.recompute() # Ensure the document and views update
+    FreeCAD.Console.PrintMessage(f"\nReconfiguring '{cfObject.Label}' for a Build123D box via macro...\n")
+    cfObject.MacroPath = b3dBoxMacroFile
+    cfObject.GeneratedObjectLabel = "Box via Macro (b3d)"
+    executeCodeFeature(cfObject)
+    if FreeCAD.ActiveDocument: FreeCAD.ActiveDocument.recompute()
     FreeCAD.Console.PrintMessage("Object should now be a box.\n")
 
     FreeCAD.Console.PrintMessage("\nMacro finished.\n")
 
-# Run the macro
 if __name__ == "__main__":
     try:
-        run_macro()
+        runMacro()
     except Exception as e:
         import traceback
         FreeCAD.Console.PrintError("Macro execution failed: \n{}".format(traceback.format_exc()))
