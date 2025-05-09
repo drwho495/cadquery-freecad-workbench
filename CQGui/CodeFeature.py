@@ -49,152 +49,67 @@ def createCodeFeature(doc, name="CodeFeature"):
     doc.recompute() # Recompute to make the new object visible and properties available
     return obj
 
+# todo: convert variables in here to be camelCase
 def executeCodeFeature(featureObject):
     """
-    Executes the code stored in the CodeFeature and updates its Shape.
+    Executes the macro specified by MacroFilename and MacroDir CodeFeature properties 
+    and updates the feature's Shape.
     """
-    # Ensure MacroPath property exists. If not, try to add it.
-    if not hasattr(featureObject, "MacroPath"):
-        FreeCAD.Console.PrintWarning(f"Object {featureObject.Name} is missing MacroPath property. Attempting to add it.\n")
+    # Ensure MacroFilename and MacroDir properties exist. Add with defaults if not.
+    if not hasattr(featureObject, "MacroFilename"):
         try:
-            featureObject.addProperty("App::PropertyFile", "MacroPath", "CodeObject", "Path to the .FCMacro file that generates the shape.")
-            FreeCAD.Console.PrintMessage(f"Added MacroPath property to {featureObject.Name}. Please set its value and recompute.\n")
-            return 
+            featureObject.addProperty("App::PropertyString", "MacroFilename", "CodeObject", "Filename of the .FCMacro (e.g., MyMacro.FCMacro).")
+            featureObject.MacroFilename = "" # Initialize
+            FreeCAD.Console.PrintWarning(f"Added missing MacroFilename property to {featureObject.Name}. Please set its value.\n")
         except Exception as e:
-            FreeCAD.Console.PrintError(f"Could not add MacroPath property to {featureObject.Name}: {e}. Cannot proceed.\n")
-            return
-
-    macro_file_path = featureObject.MacroPath
-    generated_object_label = featureObject.GeneratedObjectLabel if hasattr(featureObject, "GeneratedObjectLabel") else featureObject.Name
-
-    if not macro_file_path:
-        FreeCAD.Console.PrintError(f"MacroPath property is empty for {featureObject.Name}. Please specify a .FCMacro file.\n")
-        return
-    
-    FreeCAD.Console.PrintMessage(f"Executing CodeFeature: {featureObject.Name} from macro: {macro_file_path}\n")
-
-    try:
-        import os
-        # Attempt to resolve relative paths against the document's directory if the document is saved
-        if not os.path.isabs(macro_file_path):
-            doc = featureObject.Document
-            if doc and doc.FileName:
-                doc_dir = os.path.dirname(doc.FileName)
-                resolved_path = os.path.join(doc_dir, macro_file_path)
-                
-                if os.path.exists(resolved_path):
-                    FreeCAD.Console.PrintMessage(f"  Resolved relative macro path to: {resolved_path}\n")
-                    macro_file_path = resolved_path
-                else:
-                    FreeCAD.Console.PrintWarning(f"  Macro file '{macro_file_path}' is not absolute. Attempted to resolve relative to document, but '{resolved_path}' not found. Trying to open directly.\n")
-            else:
-                 FreeCAD.Console.PrintWarning(f"  Macro file '{macro_file_path}' is not absolute and document is not saved/has no path. Trying to open directly.\n")
-
-        with open(macro_file_path, 'r', encoding='utf-8') as f:
-            code_from_macro = f.read()
-    except FileNotFoundError:
-        FreeCAD.Console.PrintError(f"Macro file not found: {macro_file_path} for {featureObject.Name}.\n")
-        return
-    except Exception as e:
-        FreeCAD.Console.PrintError(f"Error reading macro file {macro_file_path} for {featureObject.Name}: {e}\n")
-        return
-
-
-    # Prepare a local scope for exec
-    local_scope = {}
-    
-
-    # Add a variable to hold the result
-    local_scope['result'] = None 
-
-    try:
-        # Execute the user's code
-        # For safety, consider using a more restricted environment if this code can be arbitrary
-        exec(code_from_macro, {"__builtins__": __builtins__}, local_scope)
-        
-        generated_shape_val = local_scope.get('result')
-
-        if generated_shape_val is None:
-            FreeCAD.Console.PrintError("No 'result' variable found in the executed code. Make sure your script assigns the final shape to a variable named 'result'.\n")
-            return
-
-        # Convert the resulting CadQuery/Build123D object to a FreeCAD Part.Shape
-        # This part reuses logic similar to the existing display.py
-        import Part
-        from io import BytesIO
-        brep_stream = BytesIO()
-
-        # Attempt to export the result.
-        # The executed macro is responsible for ensuring 'result' is a CadQuery or Build123D shape.
-        exported = False
-        try:
-            # Try CadQuery export first
-            import cadquery as cq_check # Use a different alias to avoid conflict if macro used 'cq'
-            if isinstance(generated_shape_val, (cq_check.Workplane, cq_check.Shape)):
-                if isinstance(generated_shape_val, cq_check.Workplane):
-                    generated_shape_val.val().exportBrep(brep_stream)
-                else: # cq_check.Shape
-                    generated_shape_val.exportBrep(brep_stream)
-                exported = True
-                FreeCAD.Console.PrintMessage("  Exported result as CadQuery object.\n")
-        except ImportError:
-            FreeCAD.Console.PrintWarning("  CadQuery module not found, cannot attempt CadQuery export.\n")
-        except Exception as e_cq:
-            FreeCAD.Console.PrintWarning(f"  Failed to export as CadQuery object: {e_cq}\n")
-
-        if not exported:
-            # Try Build123D export as a fallback
-            try:
-                from build123d import export_brep as b3d_export_brep
-                b3d_export_brep(generated_shape_val, brep_stream)
-                exported = True
-                FreeCAD.Console.PrintMessage("  Exported result using build123d.export_brep.\n")
-            except ImportError:
-                FreeCAD.Console.PrintWarning("  build123d.export_brep not found, cannot attempt Build123D export.\n")
-            except Exception as e_b3d:
-                FreeCAD.Console.PrintError(f"  Failed to export result using build123d.export_brep: {e_b3d}\n")
-                # If this also fails, we cannot proceed
-                return
-
-        if not exported:
-            FreeCAD.Console.PrintError(f"Could not determine how to export the generated shape from macro. Type: {type(generated_shape_val)}\n")
-            return
-        
-        brep_string = brep_stream.getvalue().decode('utf-8')
-        if not brep_string:
-            FreeCAD.Console.PrintError("Failed to generate BRep string from the code result.\n")
-            return
+            FreeCAD.Console.PrintError(f"Could not add MacroFilename property to {featureObject.Name}: {e}\n")
+            return # Cannot proceed
             
-        part_shape = Part.Shape()
-        part_shape.importBrepFromString(brep_string)
+    if not hasattr(featureObject, "MacroDir"):
+        try:
+            featureObject.addProperty("App::PropertyPath", "MacroDir", "CodeObject", "Directory containing the macro file. Leave empty or set to user/doc default.")
+            try: # Try to set a sensible default
+                defaultMacroUserPath = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Macro").GetString("MacroPath")
+                featureObject.MacroDir = defaultMacroUserPath
+            except:
+                featureObject.MacroDir = "" # Default to empty if preference not found
+            FreeCAD.Console.PrintWarning(f"Added missing MacroDir property to {featureObject.Name}. Initialized to '{featureObject.MacroDir}'. Please verify/set its value.\n")
+        except Exception as e:
+            FreeCAD.Console.PrintError(f"Could not add MacroDir property to {featureObject.Name}: {e}\n")
+            return # Cannot proceed
 
-        if part_shape.isNull():
-            FreeCAD.Console.PrintError("Resulting Part.Shape is null. Check the code and BRep export.\n")
-            return
+    macroFilename = featureObject.MacroFilename
+    macroDir = featureObject.MacroDir # This is a PropertyPath, should be a string dir path
+    generatedObjectLabel = featureObject.GeneratedObjectLabel if hasattr(featureObject, "GeneratedObjectLabel") else featureObject.Name
 
-        featureObject.Shape = part_shape
-        if hasattr(featureObject.ViewObject, "ShapeColor"): # Check if ViewObject exists and has ShapeColor
-             # You can set default color or expose as property later
-            pass # featureObject.ViewObject.ShapeColor = (0.8, 0.8, 0.3) 
-        if hasattr(featureObject.ViewObject, "Transparency"):
-            pass # featureObject.ViewObject.Transparency = 0
+    if not macroFilename:
+        FreeCAD.Console.PrintError(f"MacroFilename property is empty for {featureObject.Name}. Please specify a .FCMacro filename.\n")
+        return
 
-        # Update the label of the feature if a GeneratedObjectLabel was provided
-        # The main feature name (obj.Name) is system-managed and should not be changed lightly.
-        # The feature label (obj.Label) is user-friendly.
-        if generated_object_label:
-            featureObject.Label = generated_object_label
+    # Ensure os is imported for path operations
+    import os 
+    fullMacroPath = ""
 
-        FreeCAD.Console.PrintMessage(f"Successfully updated shape for {featureObject.Name} from code.\n")
-
-    except Exception as e:
-        import traceback
-        FreeCAD.Console.PrintError(f"Error executing macro '{macro_file_path}' for CodeFeature '{featureObject.Name}':\n------\n{traceback.format_exc()}\n")
-
-    finally:
-        if FreeCAD.ActiveDocument: # Ensure doc is still valid
-            FreeCAD.ActiveDocument.recompute()
-
+    # 1. If macroFilename is an absolute path, use it directly.
+    if os.path.isabs(macroFilename):
+        fullMacroPath = macroFilename
+        FreeCAD.Console.PrintMessage(f"Interpreting MacroFilename '{macroFilename}' as an absolute path.\n")
+    # 2. Else if MacroDir is specified and absolute, combine them.
+    elif macroDir and os.path.isabs(str(macroDir)): # PropertyPath might not be string directly
+        fullMacroPath = os.path.join(str(macroDir), macroFilename)
+        FreeCAD.Console.PrintMessage(f"Using specified absolute MacroDir '{str(macroDir)}' + Filename: {fullMacroPath}\n")
+    # 3. Else if MacroDir is specified (but may be relative or just a hint)
+    elif macroDir: 
+        # For App::PropertyPath, it should ideally be an absolute path if set by user via dialog.
+        # If it's relative, its interpretation can be tricky.
+        # We'll assume os.path.join can handle it if it's a valid relative path string.
+        fullMacroPath = os.path.join(str(macroDir), macroFilename)
+        FreeCAD.Console.PrintMessage(f"Using specified MacroDir '{str(macroDir)}' (may be relative) + Filename: {fullMacroPath}\n")
+    
+    # 4. Fallbacks if path not yet resolved or if above constructions don't exist
+    # Check existence after primary construction attempts
+    if fullMacroPath and os.path.exists(fullMacroPath):
+        exec(open(fullMacroPath).read())
 # --- FreeCAD FeaturePython structure (if we were to make it a full FeaturePython object) ---
 # This part is more advanced and makes the feature behave more like a native FreeCAD feature,
 # with its own icon, properties in the tree, and recomputation logic.

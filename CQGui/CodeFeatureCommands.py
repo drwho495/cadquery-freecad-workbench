@@ -30,6 +30,47 @@ def registerCodeFeatureCommand():
             if not doc:
                 doc = FreeCAD.newDocument("CodeFeatureDoc")
             
+            featureName, nameOk = QtGui.QInputDialog.getText(FreeCADGui.getMainWindow(), 
+                                                          "Create Code Feature", 
+                                                          "Enter feature name:", 
+                                                          QtGui.QLineEdit.Normal, 
+                                                          "MyCodeObject")
+            if not (nameOk and featureName):
+                FreeCAD.Console.PrintMessage("Code Feature creation cancelled by user (no name provided).\\n")
+                return
+
+            newFeature = createCodeFeature(doc, name=featureName)
+            if not newFeature:
+                FreeCAD.Console.PrintError(f"Failed to create Code Feature object named {featureName}.\\n")
+                return
+
+            macroFilenameDialog, macroOk = QtGui.QInputDialog.getText(FreeCADGui.getMainWindow(),
+                                                                "Set Macro File (Optional)",
+                                                                "Enter macro filename (e.g., MyShape.FCMacro)\\nIf MacroDir is empty, searches doc & user macro dirs:",
+                                                                QtGui.QLineEdit.Normal,
+                                                                "")
+            if macroOk and macroFilenameDialog:
+                newFeature.MacroFilename = macroFilenameDialog
+                if not newFeature.MacroFilename.lower().endswith(".fcmacro"):
+                    newFeature.MacroFilename += ".FCMacro"
+                
+                FreeCAD.Console.PrintMessage(f"Set MacroFilename to '{newFeature.MacroFilename}' for {newFeature.Label}. MacroDir is '{newFeature.MacroDir}'.\\n")
+                
+                if newFeature.MacroDir and newFeature.MacroFilename:
+                    checkPath = os.path.join(newFeature.MacroDir, newFeature.MacroFilename)
+                    if not os.path.exists(checkPath):
+                        FreeCAD.Console.PrintWarning(f"Note: Macro file {checkPath} (using current MacroDir) does not appear to exist.\\n")
+                elif not newFeature.MacroDir and newFeature.MacroFilename:
+                     FreeCAD.Console.PrintWarning(f"Note: MacroDir is empty. Existence of '{newFeature.MacroFilename}' will be checked by execution logic using fallbacks.\\n")
+            
+            executeCodeFeature(newFeature)
+            if FreeCAD.ActiveDocument: FreeCAD.ActiveDocument.recompute()
+
+        def Activated(self):
+            doc = FreeCAD.activeDocument()
+            if not doc:
+                doc = FreeCAD.newDocument("CodeFeatureDoc")
+            
             # Get feature name
             featureName, nameOk = QtGui.QInputDialog.getText(FreeCADGui.getMainWindow(), 
                                                           "Create Code Feature", 
