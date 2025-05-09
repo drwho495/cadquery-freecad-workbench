@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import FreeCAD # Required for FreeCAD.activeDocument(), FreeCAD.newDocument(), FreeCAD.GuiUp, FreeCAD.Console
+import os # For path joining
 # FreeCADGui is imported within functions after GuiUp check or if PySide is used.
 # PySide.QtGui is imported within register_code_feature_command after GuiUp check.
 
@@ -29,18 +30,45 @@ def registerCodeFeatureCommand():
             if not doc:
                 doc = FreeCAD.newDocument("CodeFeatureDoc")
             
-            feature_name, ok = QtGui.QInputDialog.getText(FreeCADGui.getMainWindow(), 
+            # Get feature name
+            featureName, nameOk = QtGui.QInputDialog.getText(FreeCADGui.getMainWindow(), 
                                                           "Create Code Feature", 
                                                           "Enter feature name:", 
                                                           QtGui.QLineEdit.Normal, 
                                                           "MyCodeObject")
-            if ok and feature_name:
-                new_feature = create_code_feature(doc, name=feature_name)
-                if new_feature:
-                    execute_code_feature(new_feature) 
-                    if FreeCAD.ActiveDocument: FreeCAD.ActiveDocument.recompute()
-            else:
-                FreeCAD.Console.PrintMessage("Code Feature creation cancelled by user.\\n")
+            if not (nameOk and featureName):
+                FreeCAD.Console.PrintMessage("Code Feature creation cancelled by user (no name provided).\\n")
+                return
+
+            # Create the feature first
+            newFeature = createCodeFeature(doc, name=featureName)
+            if not newFeature:
+                FreeCAD.Console.PrintError(f"Failed to create Code Feature object named {featureName}.\\n")
+                return
+
+            # Optionally, ask for macro filename
+            macroFilename, macroOk = QtGui.QInputDialog.getText(FreeCADGui.getMainWindow(),
+                                                                "Set Macro File (Optional)",
+                                                                "Enter macro filename (e.g., MyShape.FCMacro)\\nLocated in your default macro directory:",
+                                                                QtGui.QLineEdit.Normal,
+                                                                "") # Default empty
+
+            if macroOk and macroFilename:
+                try:
+                    defaultMacroDir = FreeCAD.ParamGet("User parameter:BaseApp/Preferences/Macro").GetString("MacroPath")
+                    if not defaultMacroDir:
+                        FreeCAD.Console.PrintWarning("Default macro directory not found or not set in preferences.\\n")
+                    else:
+                        fullMacroPath = os.path.join(defaultMacroDir, macroFilename)
+                        newFeature.MacroPath = fullMacroPath
+                        FreeCAD.Console.PrintMessage(f"Set MacroPath for {newFeature.Label} to: {fullMacroPath}\\n")
+                        if not os.path.exists(fullMacroPath):
+                             FreeCAD.Console.PrintWarning(f"Warning: Macro file {fullMacroPath} does not currently exist.\\n")
+                except Exception as e:
+                    FreeCAD.Console.PrintError(f"Error getting default macro path or setting MacroPath property: {e}\\n")
+            
+            executeCodeFeature(newFeature)
+            if FreeCAD.ActiveDocument: FreeCAD.ActiveDocument.recompute()
 
         def IsActive(self):
             return True
