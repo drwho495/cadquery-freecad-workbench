@@ -1,0 +1,63 @@
+# -*- coding: utf-8 -*-
+
+# Macro to recompute selected CodeFeature objects
+# from the cadquery-freecad-workbench.
+
+import FreeCAD
+import FreeCADGui
+
+try:
+    from CQGui import CodeFeature # Assuming CodeFeature.py is in CQGui
+except ImportError as e:
+    FreeCAD.Console.PrintError("Error importing CodeFeature: {}\n".format(e))
+    FreeCAD.Console.PrintError("Please ensure the CadQuery workbench is correctly installed and its modules are in sys.path.\n")
+    raise # Re-raise the exception if the import fails, to stop the macro.
+
+def is_code_feature(obj):
+    """Checks if a FreeCAD object is likely a CodeFeature by checking for its specific properties."""
+    return hasattr(obj, "CodeString") and hasattr(obj, "CodeType")
+
+def run_macro():
+    """Main function to run the macro's operations."""
+    
+    selection = FreeCADGui.Selection.getSelection()
+
+    if not selection:
+        FreeCAD.Console.PrintMessage("No objects selected. Please select one or more Code Features to recompute.\n")
+        return
+
+    recomputed_count = 0
+    FreeCAD.Console.PrintMessage("Attempting to recompute {} selected object(s)...\n".format(len(selection)))
+
+    for obj in selection:
+        FreeCAD.Console.PrintMessage("Processing object: '{}' ({})\n".format(obj.Label, obj.Name))
+        if is_code_feature(obj):
+            try:
+                FreeCAD.Console.PrintMessage("  Object '{}' is a Code Feature. Recomputing...\n".format(obj.Label))
+                CodeFeature.execute_code_feature(obj)
+                recomputed_count += 1
+                FreeCAD.Console.PrintMessage("  Recomputation of '{}' attempted.\n".format(obj.Label))
+            except Exception as e:
+                import traceback
+                FreeCAD.Console.PrintError("  Error recomputing Code Feature '{}':\n{}".format(obj.Label, traceback.format_exc()))
+        else:
+            FreeCAD.Console.PrintWarning("  Object '{}' is not a Code Feature (missing CodeString/CodeType properties).\n".format(obj.Label))
+
+    if recomputed_count > 0:
+        doc = FreeCAD.activeDocument()
+        if doc:
+            doc.recompute() # Perform a single document recompute after all operations
+        FreeCAD.Console.PrintMessage("\nSuccessfully attempted recomputation for {} Code Feature(s).\n".format(recomputed_count))
+    else:
+        FreeCAD.Console.PrintMessage("\nNo Code Features were found in the selection to recompute.\n")
+    
+    FreeCAD.Console.PrintMessage("Macro finished.\n")
+
+# Run the macro
+if __name__ == "__main__":
+    try:
+        run_macro()
+    except Exception as e:
+        import traceback
+        FreeCAD.Console.PrintError("Macro execution failed: \n{}".format(traceback.format_exc()))
+
